@@ -18,8 +18,8 @@ export default async function handler(req, res) {
         AMOUNT: valor,
         CURRENCY: "978",
         LANGUAGE: "PT",
-        RETURN_URL: "https://teu-username.github.io/sucesso.html",
-        CANCEL_URL: "https://teu-username.github.io/erro.html"
+        RETURN_URL: "https://tiagocodinha.github.io/reduniq/sucesso.html",
+        CANCEL_URL: "https://tiagocodinha.github.io/reduniq/erro.html"
       })
     });
 
