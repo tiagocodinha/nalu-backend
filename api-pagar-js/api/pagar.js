@@ -1,15 +1,14 @@
 export default async function handler(req, res) {
-  // Ativar CORS manualmente
+  // CORS
   res.setHeader("Access-Control-Allow-Origin", "https://tiagocodinha.github.io");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // Responder a pedidos OPTIONS (pré-flight)
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-  if (req.method !== "POST") return res.status(405).end();
+  if (req.method !== "POST") return res.status(405).json({ error: "Método não permitido" });
 
   const { descricao, valor } = req.body;
 
@@ -38,10 +37,10 @@ export default async function handler(req, res) {
     if (data.REDIRECT_URL) {
       res.status(200).json({ redirect_url: data.REDIRECT_URL });
     } else {
-      res.status(500).json({ error: "Erro na resposta da Reduniq", detalhe: data });
+      res.status(502).json({ error: "Resposta inválida da Reduniq", detalhe: data });
     }
   } catch (error) {
-    console.error("Erro Reduniq:", error);
-    res.status(500).json({ error: "Erro interno" });
+    console.error("Erro na integração com Reduniq:", error);
+    res.status(500).json({ error: "Erro interno ao comunicar com Reduniq" });
   }
 }
