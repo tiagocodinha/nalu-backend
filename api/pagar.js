@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  // CORS
+  // Ativar CORS para GitHub Pages
   res.setHeader("Access-Control-Allow-Origin", "https://tiagocodinha.github.io");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -8,10 +8,13 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  if (req.method !== "POST") return res.status(405).json({ error: "Método não permitido" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Método não permitido" });
+  }
 
   const { descricao, valor } = req.body;
 
+  // Autenticação Reduniq via Basic Auth
   const auth = Buffer.from(`${process.env.REDUNIQ_USER}:${process.env.REDUNIQ_PASS}`).toString("base64");
 
   try {
@@ -24,7 +27,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         ORDER_ID: `NALU-${Date.now()}`,
         ORDER_DESCRIPTION: descricao,
-        AMOUNT: valor,
+        AMOUNT: valor, // em cêntimos, ex: 1500 = 15€
         CURRENCY: "978",
         LANGUAGE: "PT",
         RETURN_URL: "https://tiagocodinha.github.io/reduniq/sucesso.html",
@@ -34,17 +37,18 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-        if (data.REDIRECT_URL) {
+    console.log("Resposta completa da Reduniq:", data); // 👈 debug real
+
+    if (data.REDIRECT_URL) {
       res.status(200).json({ redirect_url: data.REDIRECT_URL });
     } else {
-      console.error("Erro Reduniq:", data);
       res.status(502).json({
         error: "Erro na resposta da Reduniq",
-        reduniq: data
+        detalhe: data
       });
     }
   } catch (error) {
-    console.error("Erro na integração com Reduniq:", error);
-    res.status(500).json({ error: "Erro interno ao comunicar com Reduniq" });
+    console.error("Erro interno ao comunicar com Reduniq:", error);
+    res.status(500).json({ error: "Erro interno", detalhe: error.message });
   }
 }
