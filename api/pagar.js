@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // Ativar CORS para GitHub Pages
   res.setHeader("Access-Control-Allow-Origin", "https://tiagocodinha.github.io");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -14,7 +13,6 @@ export default async function handler(req, res) {
 
   const { descricao, valor } = req.body;
 
-  // Autenticação Reduniq via Basic Auth
   const auth = Buffer.from(`${process.env.REDUNIQ_USER}:${process.env.REDUNIQ_PASS}`).toString("base64");
 
   try {
@@ -27,7 +25,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         ORDER_ID: `NALU-${Date.now()}`,
         ORDER_DESCRIPTION: descricao,
-        AMOUNT: valor, // em cêntimos, ex: 1500 = 15€
+        AMOUNT: valor,
         CURRENCY: "978",
         LANGUAGE: "PT",
         RETURN_URL: "https://tiagocodinha.github.io/reduniq/sucesso.html",
@@ -37,18 +35,21 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    console.log("Resposta completa da Reduniq:", data); // 👈 debug real
+    console.log("Resposta da Reduniq:", data);
 
     if (data.REDIRECT_URL) {
-      res.status(200).json({ redirect_url: data.REDIRECT_URL });
+      return res.status(200).json({ redirect_url: data.REDIRECT_URL });
     } else {
-      res.status(502).json({
+      return res.status(502).json({
         error: "Erro na resposta da Reduniq",
         detalhe: data
       });
     }
   } catch (error) {
-    console.error("Erro interno ao comunicar com Reduniq:", error);
-    res.status(500).json({ error: "Erro interno", detalhe: error.message });
+    console.error("Erro interno ao comunicar com Reduniq:", error); // 👈 agora vai aparecer
+    return res.status(500).json({
+      error: "Erro interno",
+      detalhe: error.message
+    });
   }
 }
