@@ -34,10 +34,14 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    if (data.REDIRECT_URL) {
+        if (data.REDIRECT_URL) {
       res.status(200).json({ redirect_url: data.REDIRECT_URL });
     } else {
-      res.status(502).json({ error: "Resposta inválida da Reduniq", detalhe: data });
+      console.error("Erro Reduniq:", data);
+      res.status(502).json({
+        error: "Erro na resposta da Reduniq",
+        reduniq: data
+      });
     }
   } catch (error) {
     console.error("Erro na integração com Reduniq:", error);
